@@ -458,13 +458,9 @@ module Miasma
         # @param creds [Hash]
         # @return [TrueClass]
         def sts_assume_role!(creds)
-          unless(creds[:aws_access_key_id_original])
-            creds[:aws_access_key_id_original] = creds[:aws_access_key_id]
-            creds[:aws_secret_access_key_original] = creds[:aws_secret_access_key]
-          end
           sts = Miasma::Contrib::Aws::Api::Sts.new(
-            :aws_access_key_id => creds[:aws_access_key_id_original],
-            :aws_secret_access_key => creds[:aws_secret_access_key_original],
+            :aws_access_key_id => creds[:aws_access_key_id],
+            :aws_secret_access_key => creds[:aws_secret_access_key],
             :aws_region => creds.fetch(:aws_sts_region, 'us-east-1'),
             :aws_credentials_file => creds.fetch(:aws_credentials_file, aws_credentials_file),
             :aws_config_file => creds.fetch(:aws_config_file, aws_config_file),

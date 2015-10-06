@@ -5,7 +5,6 @@ module Miasma
     module Aws
       module Api
         class Sts < Miasma::Types::Api
-
           # Service name of the API
           API_SERVICE = 'sts'
           # Supported version of the AutoScaling API
@@ -13,6 +12,25 @@ module Miasma
 
           include Contrib::AwsApiCore::ApiCommon
           include Contrib::AwsApiCore::RequestUtils
+
+          # Record the AWS keys that are used the first time this class is initialized
+          # and restore them for future invocations so that we don't attempt to use STS
+          # temporary keys when interacting with STS.
+          #
+          # @param creds [Smash] credentials
+          # @return [TrueClass]
+          def custom_setup(creds)
+            creds.merge!(
+              memoize(:aws_base_creds, :global) {
+                {
+                  :aws_access_key_id => creds[:aws_access_key_id],
+                  :aws_secret_access_key => creds[:aws_secret_access_key]
+                }
+              }
+            )
+
+            true
+          end
 
           # Assume new role
           #
