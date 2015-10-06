@@ -13,25 +13,6 @@ module Miasma
           include Contrib::AwsApiCore::ApiCommon
           include Contrib::AwsApiCore::RequestUtils
 
-          # Record the AWS keys that are used the first time this class is initialized
-          # and restore them for future invocations so that we don't attempt to use STS
-          # temporary keys when interacting with STS.
-          #
-          # @param creds [Smash] credentials
-          # @return [TrueClass]
-          def custom_setup(creds)
-            creds.merge!(
-              memoize(:aws_base_creds, :global) {
-                {
-                  :aws_access_key_id => creds[:aws_access_key_id],
-                  :aws_secret_access_key => creds[:aws_secret_access_key]
-                }
-              }
-            )
-
-            true
-          end
-
           # Assume new role
           #
           # @param role_arn [String] IAM Role ARN
@@ -40,6 +21,15 @@ module Miasma
           # @option args [String] :session_name
           # @return [Hash]
           def assume_role(role_arn, args={})
+            @creds.merge!(
+              memoize("#{role_arn}_base_creds}", :global) {
+                {
+                  :aws_access_key_id => @creds[:aws_access_key_id],
+                  :aws_secret_access_key => @creds[:aws_secret_access_key]
+                }
+              }
+            )
+
             req_params = Smash.new.tap do |params|
               params['Action'] = 'AssumeRole'
               params['RoleArn'] = role_arn
