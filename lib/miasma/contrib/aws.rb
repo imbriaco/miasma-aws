@@ -418,7 +418,7 @@ module Miasma
         # @param creds [Hash]
         # @return [TrueClass]
         def after_setup(creds)
-          skip = self.class.attributes.keys.map(&:to_s)
+          skip = self.class.attributes.keys.map(&:to_s).reject { |k| k == 'aws_sts_role_arn' }
           creds.each do |k,v|
             k = k.to_s
             if(k.start_with?('aws_') && !skip.include?(k))
